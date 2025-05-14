@@ -62,6 +62,7 @@ func main() {
 				retry.HandleFailedTask(msg, err)
 			} else {
 				rdb.XAck(redisclient.Ctx, stream, group, msg.ID)
+				rdb.Incr(redisclient.Ctx, "task_success_count")
 				fmt.Println("✅ ACK task:", msg.ID)
 			}
 		}

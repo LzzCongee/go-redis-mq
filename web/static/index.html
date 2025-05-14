@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redis 任务监控</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <h2>Redis Stream 消息任务监控</h2>
+  <div id="main" style="width: 800px;height:400px;"></div>
+
+  <script>
+    async function fetchData() {
+      const res = await fetch("/api/stats");
+      return res.json();
+    }
+
+    async function renderChart() {
+      const data = await fetchData();
+
+      const chart = echarts.init(document.getElementById("main"));
+      const option = {
+        title: { text: "任务队列监控" },
+        tooltip: {},
+        legend: { data: ["数量"] },
+        xAxis: { data: ["task", "retry", "pending", "success"] },
+        yAxis: {},
+        series: [{
+          name: "数量",
+          type: "bar",
+          data: [
+            data.task_stream_len,
+            data.retry_stream_len,
+            data.pending_tasks,
+            data.success_task_count
+          ]
+        }]
+      };
+      chart.setOption(option);
+    }
+
+    renderChart();
+    setInterval(renderChart, 5000); // 每 5 秒刷新一次
+  </script>
+</body>
+</html>
