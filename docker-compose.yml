@@ -1,0 +1,63 @@
+
+services:
+  redis-master:
+    image: redis:7
+    container_name: redis-master
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    networks:
+      - redisnet
+
+  redis-slave:
+    image: redis:7
+    container_name: redis-slave
+    command: redis-server --replicaof redis-master 6379
+    networks:
+      - redisnet
+
+  sentinel1:
+    image: redis:7
+    container_name: sentinel1
+    depends_on:
+      - redis-master
+    ports:
+      - "26379:26379"
+    volumes:
+      - ./sentinel/sentinel1.conf:/sentinel.conf
+    command: redis-server /sentinel.conf --sentinel
+    networks:
+      - redisnet
+    
+
+  sentinel2:
+    image: redis:7
+    container_name: sentinel2
+    depends_on:
+      - redis-master
+    ports:
+      - "26380:26380"
+    volumes:
+      - ./sentinel/sentinel2.conf:/sentinel.conf
+    command: redis-server /sentinel.conf --sentinel
+    networks:
+      - redisnet
+    
+
+  sentinel3:
+    image: redis:7
+    container_name: sentinel3
+    depends_on:
+      - redis-master
+    ports:
+      - "26381:26381"
+    volumes:
+      - ./sentinel/sentinel3.conf:/sentinel.conf
+    command: redis-server /sentinel.conf --sentinel
+    networks:
+      - redisnet
+    
+
+networks:
+  redisnet:
+    driver: bridge

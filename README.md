@@ -40,6 +40,39 @@
     go run cmd/retry_worker/main.go
     ```
 
+### 多节点协同
+水平扩展：新增更多 Producer/Consumer，只要指向同一集群即可。
+高可用：Redis 集群／哨兵自动故障转移，业务感知最小化。
+
+### 环境变量配置
+    ```
+    export REDIS_MODE=sentinel
+    export REDIS_ADDRS="192.168.1.10:26379,192.168.1.11:26379,192.168.1.12:26379"
+    export REDIS_MASTER_NAME=mymaster
+    export REDIS_PASSWORD=yourpass  # 如果你设置了密码
+    ```
+然后在任意节点同时启动生产者／消费者／重试／Dashboard，都会连到同一套 Redis 后端，实现分布式生产和消费。
+
+### Docker运行
+
+1. 启动 Redis 主从与 Sentinel 集群：
+docker-compose up -d
+
+验证：
+    ```
+    # 查看 sentinel 是否识别了主节点
+    docker exec -it sentinel1 redis-cli -p 26379
+    > SENTINEL get-master-addr-by-name mymaster
+    ```
+输出类似：
+    ```
+    1) "172.18.0.2"
+    2) "6379"
+    ```
+
+
+
+
 ## 项目结构
 
 ```
