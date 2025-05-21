@@ -6,6 +6,10 @@ services:
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 5
     networks:
       - redisnet
 
@@ -25,9 +29,14 @@ services:
       - "26379:26379"
     volumes:
       - ./sentinel/sentinel1.conf:/sentinel.conf
-    command: redis-server /sentinel.conf --sentinel
+      - ./wait-for-redis.sh:/wait-for-redis.sh
+      - ./sentinel/entrypoint.sh:/entrypoint.sh
+    entrypoint: /entrypoint.sh
+    # command: ["sh", "/wait-for-redis.sh"]
     networks:
       - redisnet
+    extra_hosts:
+      - "redis-master:172.18.0.3"
     
 
   sentinel2:
@@ -39,10 +48,14 @@ services:
       - "26380:26380"
     volumes:
       - ./sentinel/sentinel2.conf:/sentinel.conf
-    command: redis-server /sentinel.conf --sentinel
+      - ./wait-for-redis.sh:/wait-for-redis.sh
+      - ./sentinel/entrypoint.sh:/entrypoint.sh
+    entrypoint: /entrypoint.sh
+    # command: ["sh", "/wait-for-redis.sh"]
     networks:
       - redisnet
-    
+    extra_hosts:
+      - "redis-master:172.18.0.3"
 
   sentinel3:
     image: redis:7
@@ -53,10 +66,14 @@ services:
       - "26381:26381"
     volumes:
       - ./sentinel/sentinel3.conf:/sentinel.conf
-    command: redis-server /sentinel.conf --sentinel
+      - ./wait-for-redis.sh:/wait-for-redis.sh
+      - ./sentinel/entrypoint.sh:/entrypoint.sh
+    entrypoint: /entrypoint.sh
+    # command: ["sh", "/wait-for-redis.sh"]
     networks:
       - redisnet
-    
+    extra_hosts:
+      - "redis-master:172.18.0.3"
 
 networks:
   redisnet:
